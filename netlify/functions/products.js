@@ -1,55 +1,41 @@
 // netlify/functions/products.js
-exports.handler = async () => {
-  const apiKey = process.env.CJ_API_KEY;
 
-  if (!apiKey) {
+exports.handler = async () => {
+  const token = process.env.CJ_ACCESS_TOKEN;
+  const developerKey = process.env.CJ_API_KEY;
+
+  if (!token || !developerKey) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "CJ_API_KEY is missing in Netlify" })
+      body: JSON.stringify({
+        error: "CJ_ACCESS_TOKEN or CJ_API_KEY is missing in Netlify"
+      })
     };
   }
 
   try {
-    // 1️⃣ Get Access Token
-    const tokenResponse = await fetch(
-      "https://developers.cjdropshipping.com/api2.0/v1/authentication/getAccessToken",
+    const response = await fetch(
+      "https://developers.cjdropshipping.com/api2.0/v1/product/list",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apiKey })
-      }
-    );
-
-    const tokenData = await tokenResponse.json();
-
-    if (!tokenData.accessToken) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: "Failed to obtain CJ access token", details: tokenData })
-      };
-    }
-
-    const accessToken = tokenData.accessToken;
-
-    // 2️⃣ Call the CJ products API
-    const productResponse = await fetch(
-      "https://developers.cjdropshipping.com/api2.0/v1/product/list?pageNum=1&pageSize=20",
-      {
-        method: "GET",
         headers: {
-          "CJ-Access-Token": accessToken,
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+          "CJ-Access-Token": token,
+          "CJ-Developer-Key": developerKey
+        },
+        body: JSON.stringify({
+          pageNum: 1,
+          pageSize: 10
+        })
       }
     );
 
-    const productData = await productResponse.json();
+    const data = await response.json();
 
     return {
       statusCode: 200,
-      body: JSON.stringify(productData)
+      body: JSON.stringify(data)
     };
-
   } catch (error) {
     return {
       statusCode: 500,

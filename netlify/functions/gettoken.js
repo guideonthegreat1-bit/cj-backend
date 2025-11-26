@@ -1,21 +1,27 @@
 // netlify/functions/getToken.js
 exports.handler = async () => {
-  const apiKey = process.env.CJ_API_KEY;
+  const developerKey = process.env.CJ_API_KEY;
+  const developerSecret = process.env.CJ_SECRET_KEY;
 
-  if (!apiKey) {
+  if (!developerKey || !developerSecret) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "CJ_API_KEY is missing in Netlify" })
+      body: JSON.stringify({
+        error: "CJ_API_KEY or CJ_SECRET_KEY is missing in Netlify"
+      })
     };
   }
 
   try {
     const response = await fetch(
-      "https://developers.cjdropshipping.com/api2.0/v1/authentication/getAccessToken",
+      "https://developers.cjdropshipping.com/authentication/getAccessToken",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apiKey })
+        body: JSON.stringify({
+          developerKey,
+          developerSecret
+        })
       }
     );
 
