@@ -1,74 +1,59 @@
 // netlify/functions/products.js
 exports.handler = async () => {
+  const apiKey = process.env.CJ_API_KEY;
+
+  if (!apiKey) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "CJ_API_KEY is missing in Netlify" })
+    };
+  }
+
   try {
-    const developerKey = process.env.CJ_API_KEY;
-    const developerSecret = process.env.CJ_SECRET_KEY;
-
-    if (!developerKey || !developerSecret) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({
-          error: "Missing CJ_API_KEY or CJ_SECRET_KEY environment variables"
-        })
-      };
-    }
-
-    // 1. Get Access Token
+    // 1️⃣ Get Access Token
     const tokenResponse = await fetch(
-      "https://developers.cjdropshipping.com/authentication/getAccessToken",
+      "https://developers.cjdropshipping.com/api2.0/v1/authentication/getAccessToken",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          developerKey: developerKey,
-          developerSecret: developerSecret
-        })
+        body: JSON.stringify({ apiKey })
       }
     );
 
     const tokenData = await tokenResponse.json();
 
-    if (!tokenData?.data?.accessToken) {
+    if (!tokenData.accessToken) {
       return {
         statusCode: 500,
-        body: JSON.stringify({
-          error: "Failed to obtain CJ Access Token",
-          details: tokenData
-        })
+        body: JSON.stringify({ error: "Failed to obtain CJ access token", details: tokenData })
       };
     }
 
-    const token = tokenData.data.accessToken;
+    const accessToken = tokenData.accessToken;
 
-    // 2. Get Products List
-    const productsResponse = await fetch(
-      "https://developers.cjdropshipping.com/api2.0/v1/product/list",
+    // 2️⃣ Call the CJ products API
+    const productResponse = await fetch(
+      "https://developers.cjdropshipping.com/api2.0/v1/product/list?pageNum=1&pageSize=20",
       {
-        method: "POST",
+        method: "GET",
         headers: {
-          "Content-Type": "application/json",
-          "CJ-Access-Token": token
-        },
-        body: JSON.stringify({
-          pageNum: 1,
-          pageSize: 20
-        })
+          "CJ-Access-Token": accessToken,
+          "Content-Type": "application/json"
+        }
       }
     );
 
-    const productsData = await productsResponse.json();
+    const productData = await productResponse.json();
 
     return {
       statusCode: 200,
-      body: JSON.stringify(productsData)
+      body: JSON.stringify(productData)
     };
 
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: error.message
-      })
+      body: JSON.stringify({ error: error.message })
     };
   }
 };
