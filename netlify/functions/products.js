@@ -1,12 +1,15 @@
+// netlify/functions/products.js
 exports.handler = async () => {
   try {
-    const APP_KEY = process.env.CJ_APP_KEY;
-    const APP_SECRET = process.env.CJ_APP_SECRET;
+    const developerKey = process.env.CJ_API_KEY;
+    const developerSecret = process.env.CJ_SECRET_KEY;
 
-    if (!APP_KEY) {
+    if (!developerKey || !developerSecret) {
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: "CJ_APP_KEY is missing" })
+        body: JSON.stringify({
+          error: "Missing CJ_API_KEY or CJ_SECRET_KEY environment variables"
+        })
       };
     }
 
@@ -17,8 +20,8 @@ exports.handler = async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          apiKey: APP_KEY,        // ← CORRECT CJ FIELD NAME
-          apiSecret: APP_SECRET || ""
+          developerKey: developerKey,
+          developerSecret: developerSecret
         })
       }
     );

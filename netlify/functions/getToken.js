@@ -1,6 +1,7 @@
+// netlify/functions/getToken.js
 exports.handler = async () => {
-  const clientId = process.env.CJ_API_KEY;
-  const clientSecret = process.env.CJ_API_SECRET;
+  const developerKey = process.env.CJ_API_KEY;
+  const developerSecret = process.env.CJ_SECRET_KEY;
 
   try {
     const response = await fetch(
@@ -9,8 +10,8 @@ exports.handler = async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          client_id: clientId,
-          client_secret: clientSecret
+          developerKey: developerKey,
+          developerSecret: developerSecret
         })
       }
     );
